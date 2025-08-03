@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --background: hsl(0, 0%, 98%);
+            --foreground: hsl(220, 13%, 18%);
+            --card: hsl(0, 0%, 100%);
+            --card-foreground: hsl(220, 13%, 18%);
+            --primary: hsl(220, 70%, 50%);
+            --primary-foreground: hsl(0, 0%, 100%);
+            --secondary: hsl(220, 14%, 96%);
+            --secondary-foreground: hsl(220, 13%, 18%);
+            --muted: hsl(220, 14%, 96%);
+            --muted-foreground: hsl(220, 9%, 46%);
+            --border: hsl(220, 13%, 91%);
+            --input: hsl(220, 13%, 91%);
+            --radius: 0.75rem;
+            --gradient-primary: linear-gradient(135deg, hsl(220, 70%, 50%), hsl(220, 70%, 40%));
+            --gradient-subtle: linear-gradient(180deg, hsl(0, 0%, 100%), hsl(220, 14%, 98%));
+            --shadow-card: 0 1px 3px hsl(220, 70%, 50%, 0.12), 0 1px 2px hsl(220, 70%, 50%, 0.24);
+            --shadow-elevated: 0 4px 12px hsl(220, 70%, 50%, 0.15);
+            --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gradient-subtle);
+            color: var(--foreground);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 64rem;
+            margin: 0 auto;
+            padding: 2rem 0;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 4rem;
+            height: 4rem;
+            background: var(--gradient-primary);
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-elevated);
+        }
+
+        .header-icon svg {
+            width: 2rem;
+            height: 2rem;
+            color: var(--primary-foreground);
+        }
+
+        .header h1 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--foreground);
+        }
+
+        .header p {
+            color: var(--muted-foreground);
+            font-size: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            gap: 2rem;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-card);
+            border: 1px solid transparent;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.5rem 1.5rem 0;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--card-foreground);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--foreground);
+            margin-bottom: 0.5rem;
+        }
+
+        .input, .select {
+            width: 100%;
+            height: 3rem;
+            padding: 0 0.75rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) - 2px);
+            font-size: 0.875rem;
+            transition: var(--transition-smooth);
+            outline: none;
+        }
+
+        .input:focus, .select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px hsl(220, 70%, 50%, 0.2);
+        }
+
+        .select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 3rem;
+            padding: 0 1rem;
+            background: var(--gradient-primary);
+            color: var(--primary-foreground);
+            border: none;
+            border-radius: calc(var(--radius) - 2px);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+        }
+
+        .button:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .button-outline {
+            background: transparent;
+            color: var(--foreground);
+            border: 1px solid var(--border);
+        }
+
+        .button-outline:hover:not(:disabled) {
+            background: hsl(220, 14%, 96%, 0.8);
+            opacity: 1;
+        }
+
+        .button svg {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        .qr-display {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .qr-container {
+            padding: 1.5rem;
+            background: var(--card);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border);
+        }
+
+        .qr-image {
+            width: 12rem;
+            height: 12rem;
+            object-fit: contain;
+        }
+
+        .qr-info {
+            background: hsl(220, 14%, 96%, 0.5);
+            border-radius: calc(var(--radius) - 2px);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .qr-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .qr-info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .qr-info-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--muted-foreground);
+        }
+
+        .qr-info-value {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--foreground);
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            width: 6rem;
+            height: 6rem;
+            background: var(--secondary);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state-icon svg {
+            width: 2.5rem;
+            height: 2.5rem;
+            color: var(--muted-foreground);
+        }
+
+        .empty-state p {
+            color: var(--muted-foreground);
+            margin-bottom: 0.25rem;
+        }
+
+        .empty-state p:first-of-type {
+            font-weight: 500;
+        }
+
+        .empty-state p:last-of-type {
+            font-size: 0.875rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .footer p {
+            font-size: 0.875rem;
+            color: var(--muted-foreground);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="5" height="5" x="3" y="3" rx="1"/>
+                    <rect width="5" height="5" x="16" y="3" rx="1"/>
+                    <rect width="5" height="5" x="3" y="16" rx="1"/>
+                    <path d="m21 16-3.5-3.5-2.5 2.5"/>
+                    <path d="m21 21-3.5-3.5-2.5 2.5"/>
+                </svg>
+            </div>
+            <h1>Dicount QR Code Generator</h1>
+            <p>Application card for Senior Citizens, Persons with Disabilities (PWD), or Single Parents eligible for discounts.</p>
+        </div>
+
+        <div class="grid">
+            <!-- Form Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Generate QR Code</h2>
+                </div>
+                <div class="card-content">
+                    <form id="qrForm">
+                        <div class="form-group">
+                            <label for="name" class="label">Full Name</label>
+                            <input
+                                type="text"
+                                id="name"
+                                class="input"
+                                placeholder="Enter full name"
+                                required
+                            />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="status" class="label">Status</label>
+                            <select id="status" class="select" required>
+                                <option value="">Select status</option>
+                                <option value="PWD">PWD</option>
+                                <option value="Single Parent">Single Parent</option>
+                                <option value="Senior Citizen">Senior Citizen</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" id="generateBtn" class="button">
+                            Generate QR Code
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- QR Code Display Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">QR Code Preview</h2>
+                </div>
+                <div class="card-content">
+                    <div id="qrResult" class="hidden">
+                        <!-- QR Code Display -->
+                        <div class="qr-display">
+                            <div class="qr-container">
+                                <img id="qrImage" src="" alt="Generated QR Code" class="qr-image" />
+                            </div>
+                        </div>
+
+                        <!-- QR Code Info -->
+                        <div class="qr-info">
+                            <div class="qr-info-row">
+                                <span class="qr-info-label">Name:</span>
+                                <span class="qr-info-value" id="displayName"></span>
+                            </div>
+                            <div class="qr-info-row">
+                                <span class="qr-info-label">Status:</span>
+                                <span class="qr-info-value" id="displayStatus"></span>
+                            </div>
+                        </div>
+
+                        <!-- Download Button -->
+                        <button id="downloadBtn" class="button button-outline">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7,10 12,15 17,10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download QR Code
+                        </button>
+                    </div>
+
+                    <div id="emptyState" class="empty-state">
+                        <div class="empty-state-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="5" height="5" x="3" y="3" rx="1"/>
+                                <rect width="5" height="5" x="16" y="3" rx="1"/>
+                                <rect width="5" height="5" x="3" y="16" rx="1"/>
+                                <path d="m21 16-3.5-3.5-2.5 2.5"/>
+                                <path d="m21 21-3.5-3.5-2.5 2.5"/>
+                            </svg>
+                        </div>
+                        <p>No QR code generated yet</p>
+                        <p>Fill in the form and click "Generate QR Code"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Professional QR code generator for cards and documents</p>
+        </div>
+    </div>
+
+    <script>
+        // QR Code generation using API service
+        function generateQRCode(text) {
+            const size = 200;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(text)}&size=${size}x${size}&color=1e293b&bgcolor=ffffff`;
+            return qrUrl;
+        }
+
+        // Form handling
+        document.getElementById('qrForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value.trim();
+            const status = document.getElementById('status').value;
+            
+            if (!name || !status) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.textContent = 'Generating...';
+            generateBtn.disabled = true;
+            
+            // Generate QR code data
+            const qrData = `${name} - ${status}`;
+            const qrImageUrl = generateQRCode(qrData);
+            
+            // Update display
+            document.getElementById('qrImage').src = qrImageUrl;
+            document.getElementById('displayName').textContent = name;
+            document.getElementById('displayStatus').textContent = status;
+            
+            // Show result and hide empty state
+            document.getElementById('qrResult').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+            
+            // Reset button
+            generateBtn.textContent = 'Generate QR Code';
+            generateBtn.disabled = false;
+        });
+
+        // Download functionality
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            const qrImage = document.getElementById('qrImage');
+            const name = document.getElementById('name').value.trim();
+            
+            if (!qrImage.src) return;
+            
+            // Create a canvas to convert the image
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.crossOrigin = 'anonymous';
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                
+                // Create download link
+                canvas.toBlob(function(blob) {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `qr-${name.replace(/\s+/g, '-').toLowerCase()}.png`;
+                    link.href = url;
+                    link.click();
+                    window.URL.revokeObjectURL(url);
+                });
+            };
+            
+            img.src = qrImage.src;
+        });
+
+        // Form validation
+        function validateForm() {
+            const name = document.getElementById('name').value.trim();
+            const status = document.getElementById('status').value;
+            const generateBtn = document.getElementById('generateBtn');
+            
+            generateBtn.disabled = !name || !status;
+        }
+
+        document.getElementById('name').addEventListener('input', validateForm);
+        document.getElementById('status').addEventListener('change', validateForm);
+
+        // Initial validation
+        validateForm();
+    </script>
+</body>
+</html>
